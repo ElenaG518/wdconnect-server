@@ -29,7 +29,7 @@ router.get('/', auth, async (req, res) => {
 router.post(
   '/',
   [
-    check('email', 'Please include a valid email address').isEmail(),
+    check('username', 'Please enter your username').exists(),
     check('password', 'please enter your password').exists()
   ],
   async (req, res) => {
@@ -38,7 +38,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { username, password } = req.body;
 
     try {
       // See if user exists

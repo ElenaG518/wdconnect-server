@@ -9,10 +9,19 @@ const ProfileSchema = mongoose.Schema({
     type: String
   },
   location: {
-    type: String
+    type: String,
+    required: true
   },
   bio: {
-    type: String
+    type: String,
+    required: true
+  },
+  hobbies: {
+    type: [String]
+  },
+  skills: {
+    type: [String],
+    required: true
   },
   social: {
     youtube: {

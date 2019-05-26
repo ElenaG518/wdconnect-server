@@ -23,6 +23,9 @@ router.post(
     check('name', 'Name is required')
       .not()
       .isEmpty(),
+    check('username', 'Please provide a username')
+      .not()
+      .isEmpty(),
     check('email', 'Please include a valid email address').isEmail(),
     check(
       'password',
@@ -35,10 +38,18 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password } = req.body;
+    const { name, username, email, password } = req.body;
 
     try {
       // See if user exists
+      let user = await User.findOne({ username }) {
+        if (user) {
+          return res
+            .status(400)
+            .json({ errors: [{ msg: 'That username is already taken' }] });
+        }
+      }
+
       let user = await User.findOne({ email });
 
       if (user) {

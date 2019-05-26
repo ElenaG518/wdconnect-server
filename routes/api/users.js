@@ -40,22 +40,36 @@ router.post(
 
     const { name, username, email, password } = req.body;
 
+    const explicityTrimmedFields = ['username', 'password', 'email'];
+    const nonTrimmedField = explicityTrimmedFields.find(
+      field => req.body[field].trim() !== req.body[field]
+    );
+
+    if (nonTrimmedField) {
+      return res.status(422).json({
+        code: 422,
+        reason: 'ValidationError',
+        message: 'Cannot start or end with whitespace',
+        location: nonTrimmedField
+      });
+    }
+
     try {
       // See if user exists
-      let user = await User.findOne({ username }) {
-        if (user) {
-          return res
-            .status(400)
-            .json({ errors: [{ msg: 'That username is already taken' }] });
-        }
+      let usrname = await User.findOne({ username });
+      if (usrname) {
+        return res
+          .status(400)
+          .json({ errors: [{ msg: 'That username is already taken' }] });
       }
 
       let user = await User.findOne({ email });
-
       if (user) {
         return res
           .status(400)
-          .json({ errors: [{ msg: 'User already exists' }] });
+          .json({
+            errors: [{ msg: 'That email address is already registered' }]
+          });
       }
 
       // Get users gravatar
@@ -67,6 +81,7 @@ router.post(
 
       user = new User({
         name,
+        username,
         email,
         avatar,
         password

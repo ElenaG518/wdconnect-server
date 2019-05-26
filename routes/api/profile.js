@@ -86,8 +86,6 @@ router.post(
     if (instagram) profile.social.instagram = instagram;
     if (linkedin) profile.social.linkedin = linkedin;
 
-    console.log(profile);
-
     try {
       // mongoose returns a promise, so anytime we use mongoose, we need to use keyword await
       let newProfile = await Profile.findOne({ user: req.user.id });
@@ -97,8 +95,7 @@ router.post(
         newProfile = await Profile.findOneAndUpdate(
           { user: req.user.id },
           { $set: profile },
-          { new: true },
-          { useFindAndModify: false }
+          { new: true }
         );
 
         return res.json(newProfile);

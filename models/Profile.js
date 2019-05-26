@@ -17,7 +17,8 @@ const ProfileSchema = mongoose.Schema({
     required: true
   },
   hobbies: {
-    type: [String]
+    type: [String],
+    required: true
   },
   skills: {
     type: [String],

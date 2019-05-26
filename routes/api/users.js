@@ -56,20 +56,15 @@ router.post(
 
     try {
       // See if user exists
-      let usrname = await User.findOne({ username });
+      console.log('this ', username, email);
+      let usrname = await User.findOne({ $or: [{ username }, { email }] });
       if (usrname) {
-        return res
-          .status(400)
-          .json({ errors: [{ msg: 'That username is already taken' }] });
-      }
-
-      let user = await User.findOne({ email });
-      if (user) {
-        return res
-          .status(400)
-          .json({
-            errors: [{ msg: 'That email address is already registered' }]
-          });
+        console.log(usrname.username);
+        let msg =
+          usrname.username === username
+            ? 'That username is already taken'
+            : 'That email address is already registered';
+        return res.status(400).json({ errors: [{ msg }] });
       }
 
       // Get users gravatar

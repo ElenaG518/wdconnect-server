@@ -35,6 +35,7 @@ UserSchema.methods.serialize = function() {
     id: this._id,
     name: this.name || '',
     email: this.email || '',
+    username: this.username,
     avatar: this.avatar,
     date: this.date
   };

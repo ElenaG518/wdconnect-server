@@ -30,7 +30,7 @@ router.post(
   '/',
   [
     check('username', 'Please enter your username').exists(),
-    check('password', 'please enter your password').exists()
+    check('password', 'Please enter your password').exists()
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -42,7 +42,7 @@ router.post(
 
     try {
       // See if user exists
-      let user = await User.findOne({ email });
+      let user = await User.findOne({ username });
       console.log(user);
 
       if (!user) {

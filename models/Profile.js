@@ -24,6 +24,32 @@ const ProfileSchema = mongoose.Schema({
     type: [String],
     required: true
   },
+  blogpost: [
+    {
+      title: {
+        type: String,
+        required: true
+      },
+      content: {
+        type: String,
+        required: true
+      },
+      location: {
+        type: String
+      },
+      published: {
+        type: Date,
+        required: true
+      },
+      updated: {
+        type: Date
+      },
+      description: {
+        type: String,
+        required: true
+      }
+    }
+  ],
   social: {
     youtube: {
       type: String

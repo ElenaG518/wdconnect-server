@@ -12,10 +12,10 @@ const User = require('../../models/User');
 
 router.get('/me', auth, async (req, res) => {
   try {
-    const profile = await Profile.findById(req.user.id).populate('user', [
-      'name',
-      'avatar'
-    ]);
+    const profile = await Profile.findOne({ user: req.user.id }).populate(
+      'user',
+      ['username', 'name', 'avatar']
+    );
 
     if (!profile) {
       return res.status(400).json({ msg: 'There is no profile for this user' });
@@ -130,8 +130,8 @@ router.get('/', async (req, res) => {
 });
 
 // @route    GET api/profile/:id
-// @desc     Get profile for user by user id
-// @access   Private
+// @desc     Get profile by user id
+// @access   Public
 
 router.get('/:id', async (req, res) => {
   // let id = req.params.id;
@@ -153,6 +153,24 @@ router.get('/:id', async (req, res) => {
     if (err.kind === 'ObjectId') {
       return res.status(400).json({ msg: 'Profile not found' });
     }
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+// @route    DELETE api/profile
+// @desc     Delete profile, user & posts
+// @access   Private
+
+router.delete('/', auth, async (req, res) => {
+  try {
+    // @todo - remove user's posts
+
+    await Profile.findOneAndRemove({ user: req.user.id });
+    await User.findOneAndRemove({ _id: req.user.id });
+
+    res.json({ msg: 'User deleted' });
+  } catch (err) {
+    console.error(err.message);
     res.status(500).send('Internal Server Error');
   }
 });

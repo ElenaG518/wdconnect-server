@@ -129,4 +129,32 @@ router.get('/', async (req, res) => {
   }
 });
 
+// @route    GET api/profile/:id
+// @desc     Get profile for user by user id
+// @access   Private
+
+router.get('/:id', async (req, res) => {
+  // let id = req.params.id;
+  // if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
+  //   console.log("params id and req body id don't match");
+  //   return res.status(400).send("ID's don't match");
+  // }
+  try {
+    const profile = await Profile.findOne({ user: req.params.id }).populate(
+      'user',
+      ['name', 'user', 'avatar']
+    );
+
+    if (!profile) return res.status(400).json({ msg: 'Profile not found' });
+
+    res.json(profile);
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(400).json({ msg: 'Profile not found' });
+    }
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 module.exports = router;

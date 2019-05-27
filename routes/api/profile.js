@@ -1,4 +1,6 @@
 const express = require('express');
+const request = require('request');
+const config = require('config');
 const router = express.Router();
 const auth = require('../../middleware/auth');
 const { check, validationResult } = require('express-validator/check');
@@ -159,6 +161,24 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// @route    DELETE api/profile
+// @desc     Delete profile, user & posts
+// @access   Private
+
+router.delete('/', auth, async (req, res) => {
+  try {
+    // @todo - remove user's posts
+
+    await Profile.findOneAndRemove({ user: req.user.id });
+    await User.findOneAndRemove({ _id: req.user.id });
+
+    res.json({ msg: 'User deleted' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
 // @route    PUT api/profile/experience
 // @desc     Add profile experience
 // @access   Private
@@ -223,21 +243,57 @@ router.put(
   }
 );
 
-// @route    DELETE api/profile
-// @desc     Delete profile, user & posts
+// @route    DELETE api/profile/blogpost/:blog_id
+// @desc     Delete blogpost entry from profile
 // @access   Private
 
-router.delete('/', auth, async (req, res) => {
+router.delete('/blogpost/:blog_id', auth, async (req, res) => {
   try {
-    // @todo - remove user's posts
+    // get profile that has the blog we want to delete
+    const profile = await Profile.findOne({ user: req.user.id });
 
-    await Profile.findOneAndRemove({ user: req.user.id });
-    await User.findOneAndRemove({ _id: req.user.id });
+    const blogIndex = profile.blogpost
+      .map(blog => blog.id)
+      .indexOf(req.params.blog_id);
 
-    res.json({ msg: 'User deleted' });
+    profile.blogpost.splice(blogIndex, 1);
+
+    await profile.save();
+
+    res.json(profile);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Internal Server Error');
+  }
+});
+
+// @route    GET api/profile/github/:username
+// @desc     Get user repos from Github
+// @access   Public
+router.get('/github/:username', (req, res) => {
+  try {
+    const options = {
+      uri: `https://api.github.com/users/${
+        req.params.username
+      }/repos?per_page=5&sort=created:asc&client_id=${config.get(
+        'githubClientId'
+      )}&client_secret=${config.get('githubSecret')}`,
+      method: 'GET',
+      headers: { 'user-agent': 'node.js' }
+    };
+
+    request(options, (error, response, body) => {
+      if (error) console.error(error);
+
+      if (response.statusCode !== 200) {
+        return res.status(404).json({ msg: 'No Github profile found' });
+      }
+
+      res.json(JSON.parse(body));
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 

@@ -98,7 +98,6 @@ router.delete('/:id', auth, async (req, res) => {
       console.log('no post found');
       return res.status(404).json({ msg: 'Post not found' });
     }
-    console.log(post.user, req.user.id);
     // ensure only owner of post can delete post
     // need to convert the ObjectId to a string in order to do comparison
     if (post.user.toString() !== req.user.id) {
@@ -107,6 +106,79 @@ router.delete('/:id', auth, async (req, res) => {
 
     await post.remove();
     res.json({ msg: 'Post deletion was successful' });
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Post not found' });
+    }
+    return res.status(500).send('Internal Server Error');
+  }
+});
+
+// @route    PUT api/posts/like/:id
+// @desc     Like a  post
+// @access   Private
+
+router.put('/like/:id', auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    // check if post has already been liked by user
+    if (
+      post.likes.filter(like => like.user.toString() === req.user.id).length > 0
+    ) {
+      return res.status(400).json({ msg: 'Post already liked' });
+    }
+
+    post.likes.unshift({ user: req.user.id });
+
+    await post.save();
+
+    res.json(post.likes);
+
+    if (!post) {
+      console.log('no post found');
+      return res.status(404).json({ msg: 'Post not found' });
+    }
+  } catch (err) {
+    console.error(err.message);
+    if (err.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Post not found' });
+    }
+    return res.status(500).send('Internal Server Error');
+  }
+});
+
+// @route    PUT api/posts/unlike/:id
+// @desc     unlike a  post
+// @access   Private
+
+router.put('/unlike/:id', auth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id);
+
+    // check if post has already been liked by user
+    if (
+      post.likes.filter(like => like.user.toString() === req.user.id).length ===
+      0
+    ) {
+      return res.status(400).json({ msg: "Post hasn't been liked" });
+    }
+
+    // get the remove index
+    const removeIndex = post.likes
+      .map(like => like.user.toString())
+      .indexOf(req.user.id);
+
+    post.likes.splice(removeIndex, 1);
+    await post.save();
+
+    res.json(post.likes);
+
+    if (!post) {
+      console.log('no post found');
+      return res.status(404).json({ msg: 'Post not found' });
+    }
   } catch (err) {
     console.error(err.message);
     if (err.kind === 'ObjectId') {
